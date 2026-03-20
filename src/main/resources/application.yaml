@@ -9,14 +9,13 @@ spring:
     # url: jdbc:mysql://localhost:3307/userdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     # url: jdbc:mysql://localhost:3307/userdb
     # url: jdbc:mysql://mysql-service:3306/userdb
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:mysql://mysql-service:3306/userdb}
+    username: ${DB_USERNAME:marco}
+    password: ${DB_PASSWORD:123456789}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      # ddl-auto: update
       ddl-auto: validate
     show-sql: true
     properties:
@@ -37,13 +36,11 @@ spring:
 eureka:
   client:
     service-url:
-      # defaultZone: http://localhost:8761/eureka/
-      # defaultZone: http://eureka-server:8761/eureka/
-      defaultZone: https://eureka-server-ufvy.onrender.com/eureka/
-
+      # defaultZone: http://localhost:8761/eureka/ # LOCAL
+      defaultZone: ${URL_EUREKA:http://eureka-server:8761/eureka/}
   instance:
-    hostname: localhost
-    prefer-ip-address: true
+    # hostname: user-service # Nombre del servicio para Eureka
+    prefer-ip-address: true # En Docker, es mejor usar la IP para evitar problemas de resolución de nombres
 
 management:
   tracing:
