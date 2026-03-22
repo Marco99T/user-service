@@ -4,6 +4,7 @@ import com.marco.torres.user_service.entity.Role;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,7 +19,7 @@ public class Request {
     @NotBlank
     private String password;
 
-    @NotBlank
+    @NotNull
     private Role role;
 
 }
