@@ -48,7 +48,7 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
     }
 
-    @PostMapping("/user")
+    @PostMapping
     public User create(@RequestBody User user) {
         return userService.createUser(user);
     }
