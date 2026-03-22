@@ -1,15 +1,16 @@
 package com.marco.torres.user_service.service;
 
-import com.marco.torres.user_service.entity.User;
+import com.marco.torres.user_service.dto.Request;
+import com.marco.torres.user_service.dto.Response;
 
 public interface UserService {
 
-    User createUser(User user);
+    Response getByUsername(String email);
 
-    User updateUser(Long id, User updatedUser);
+    Response create(Request request);
 
-    User getUserByUsername(String username);
+    Response update(Long id, Request request);
 
-    User deleteUser(String username);
+    void delete(Long id);
 
 }
