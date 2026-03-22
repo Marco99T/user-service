@@ -3,12 +3,14 @@ package com.marco.torres.user_service.service;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.marco.torres.user_service.dto.Request;
+import com.marco.torres.user_service.dto.Response;
 import com.marco.torres.user_service.entity.User;
 import com.marco.torres.user_service.repository.UserRepository;
 
@@ -19,73 +21,92 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<Response> getAll() {
+        return userRepository.findAll()
+                .stream()
+                .map((User u) -> Response.builder()
+                        .id(u.getId())
+                        .email(u.getEmail())
+                        .role(u.getRole())
+                        .enabled(u.isEnabled())
+                        .createdAt(u.getCreatedAt())
+                        .updatedAt(u.getUpdatedAt())
+                        .build())
+                .toList();
+    }
+
+    public Response getByUsername(String email) {
+        return userRepository.findByEmail(email)
+                .map((User user) -> Response.builder()
+                        .id(user.getId())
+                        .email(user.getEmail())
+                        .role(user.getRole())
+                        .enabled(user.isEnabled())
+                        .createdAt(user.getCreatedAt())
+                        .updatedAt(user.getUpdatedAt())
+                        .build())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
     }
 
     @Override
-    public User createUser(User user) {
-        if (userRepository.existsByUsername(user.getUsername())) {
-            return null;
-        }
+    public Response create(Request request) {
+        if (userRepository.existsByEmail(request.getEmail()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El email ya está registrado");
 
-        if (userRepository.existsByEmail(user.getEmail())) {
-            return null;
-        }
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        return userRepository.save(user);
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+
+        User user = User.builder()
+                .username(null)
+                .email(request.getEmail())
+                .password(encodedPassword)
+                .role(request.getRole())
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        return Response.builder()
+                .id(savedUser.getId())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole())
+                .enabled(savedUser.isEnabled())
+                .createdAt(savedUser.getCreatedAt())
+                .updatedAt(savedUser.getUpdatedAt())
+                .build();
     }
 
     @Override
-    public User updateUser(Long id, User updatedUser) {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent()) {
-            return null;
-        }
+    public Response update(Long id, Request request) {
+        if (!userRepository.findById(id).isPresent())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario no encontrado");
 
-        user.get().setUsername(updatedUser.getUsername());
-        user.get().setEmail(updatedUser.getEmail());
-        String encodedPassword = passwordEncoder.encode(updatedUser.getPassword());
-        user.get().setPassword(encodedPassword);
-        return userRepository.save(user.get());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+
+        User user = User.builder()
+                .username(null)
+                .email(request.getEmail())
+                .password(encodedPassword)
+                .role(request.getRole())
+                .build();
+
+        User userUpdated = userRepository.save(user);
+
+        return Response.builder()
+                .id(userUpdated.getId())
+                .email(userUpdated.getEmail())
+                .role(userUpdated.getRole())
+                .enabled(userUpdated.isEnabled())
+                .createdAt(userUpdated.getCreatedAt())
+                .updatedAt(userUpdated.getUpdatedAt())
+                .build();
     }
 
     @Override
-    public User getUserByUsername(String username) {
-        Optional<User> user = userRepository.findByUsername(username);
-        if (!user.isPresent()) {
-            return null;
-        }
-        return user.get();
+    public void delete(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        userRepository.delete(user);
     }
 
-    @Override
-    public User deleteUser(String username) {
-        Optional<User> user = userRepository.findByUsername(username);
-        if (!user.isPresent()) {
-            return null;
-        }
-        userRepository.delete(user.get());
-        return user.get();
-    }
-
-    public boolean deleteUser(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent()) {
-            return false;
-        }
-        userRepository.deleteById(id);
-        return true;
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<User> findUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
 }
