@@ -49,6 +49,7 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response> create(@RequestBody @Valid Request request) {
         Response user = userService.create(request);
         URI location = URI.create("/users/" + user.getId());
