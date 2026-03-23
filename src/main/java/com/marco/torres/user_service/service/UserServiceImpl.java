@@ -57,7 +57,6 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
-                .username(null)
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .role(request.getRole())
@@ -83,7 +82,6 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
-                .username(null)
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .role(request.getRole())
